@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exam Board Revision</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f9f9f9;
+      }
+      .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+      }
+      .tab {
+        background: #9977c9;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: none;
+      }
+      .tab.active {
+        background: #f1b035;
+      }
+      .week-list {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .week-item {
+        display: flex;
+        height: 40px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+      }
+      .week-item:last-child {
+        border-bottom: none;
+      }
+      .week-item:hover {
+        background: #f1f1f1;
+      }
+      .week-title {
+        color: #8d7e7e;
+        font-weight: bold;
+      }
+      .arrow {
+        font-size: 18px;
+        color: #33df11;
+      }
+      .qa-card {
+        max-width: 900px;
+        margin: 20px auto;
+        background: rgb(241, 229, 229);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .qa-card h3 {
+        margin: 0 0 10px 0;
+        color: #3f3b44;
+      }
+      .qa-card p {
+        margin: 0;
+        color: #333;
+      }
+      .toggle-button {
+        display: block;
+        margin: 10px auto;
+        padding: 8px 12px;
+        background: #716186;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .back-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background: #9af89a;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .qa-card p.answer {
+        margin: 0;
+        color: #1b1a1a;
+        display: none;
+        padding: 10px;
+
+        border-radius: 8px;
+        background-color: #f6fcfb;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .qa-card p.answer.show-answer {
+        display: block;
+
+        background-color: #f0f3f3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tabs">
+      <button class="tab active" data-board="aqa">AQA</button>
+      <button class="tab" data-board="ocr">OCR</button>
+      <button class="tab" data-board="english">GCSE</button>
+    </div>
+
+    <div class="week-list" id="weekList"></div>
+
+    <script>
+      const weekData = {
+        aqa: [
+          { title: "Week 01", id: "aqa_week_01" },
+          { title: "Week 02", id: "aqa_week_02" },
+          { title: "Week 03", id: "aqa_week_03" },
+          { title: "Week 04", id: "aqa_week_04" },
+        ],
+        ocr: [
+          { title: "Week 01", id: "ocr_week_01" },
+          { title: "Week 02", id: "ocr_week_02" },
+        ],
+        english: [
+          { title: "Week 01", id: "english_week_01" },
+          { title: "Week 02", id: "english_week_02" },
+        ],
+      };
+
+      const questionsAnswers = {
+        aqa_week_01: [
+          {
+            question:
+              "What is the significance of a candy cane in holiday traditions?",
+            answer:
+              "A candy cane represents the shepherd's crook and is a traditional Christmas treat.",
+          },
+          {
+            question:
+              "What is the significance of a candy cane in holiday traditions?",
+            answer:
+              "A candy cane represents the shepherd's crook and is a traditional Christmas treat.",
+          },
+        ],
+        aqa_week_02: [
+          {
+            question:
+              "Explain the forces acting on a cylinder sliding down a slope.",
+            answer:
+              "The forces include gravity, normal force, friction, and the applied tension force.",
+          },
+        ],
+        aqa_week_03: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+        aqa_week_04: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+        ocr_week_01: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+        ocr_week_02: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+        english_week_01: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+        english_week_02: [
+          {
+            question: "What is a damped pendulum?",
+            answer:
+              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
+          },
+        ],
+      };
+
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          populateWeeks(tab.dataset.board);
+        });
+      });
+
+      function populateWeeks(board) {
+        const weekList = document.getElementById("weekList");
+        weekList.innerHTML = "";
+        weekData[board].forEach((week) => {
+          const weekItem = document.createElement("div");
+          weekItem.classList.add("week-item");
+          weekItem.innerHTML = `<span class='week-title'>${week.title}</span><span class="arrow">→</span>`;
+          weekItem.addEventListener("click", () => {
+            showQuestionAnswer(week.id);
+          });
+          weekList.appendChild(weekItem);
+        });
+      }
+
+      function showQuestionAnswer(weekId) {
+        const qaSet = questionsAnswers[weekId];
+        if (qaSet) {
+          document.body.innerHTML = `<h2 align="center">Questions And Answers</h2>`;
+          qaSet.forEach((qa) => {
+            const qaCard = document.createElement("div");
+            qaCard.classList.add("qa-card");
+
+            qaCard.innerHTML = `
+              <h3>${qa.question}</h3>
+              <button class='toggle-button'>SHOW ANSWER</button>
+              <p class="answer" style="display:none">${qa.answer}</p>
+            `;
+
+            const toggleButton = qaCard.querySelector(".toggle-button");
+            const answerParagraph = qaCard.querySelector(".answer");
+
+            toggleButton.addEventListener("click", function () {
+              if (
+                answerParagraph.style.display === "none" ||
+                answerParagraph.style.display === ""
+              ) {
+                answerParagraph.style.display = "block";
+                answerParagraph.classList.add("show-answer");
+                toggleButton.textContent = "HIDE ANSWER";
+              } else {
+                answerParagraph.style.display = "none";
+                answerParagraph.classList.remove("show-answer");
+                toggleButton.textContent = "SHOW ANSWER";
+              }
+            });
+
+            document.body.appendChild(qaCard);
+          });
+
+          const backButton = document.createElement("button");
+          backButton.classList.add("back-button");
+          backButton.innerText = "Back to Revision Weeks";
+          backButton.addEventListener("click", () => {
+            location.reload();
+          });
+          document.body.appendChild(backButton);
+        }
+      }
+
+      populateWeeks("aqa");
+    </script>
+  </body>
+</html>
