@@ -1,282 +1,912 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Exam Board Revision</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background-color: #f9f9f9;
-      }
-      .tabs {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        margin-bottom: 20px;
-      }
-      .tab {
-        background: #9977c9;
-        color: white;
-        padding: 15px 40px;
-        border-radius: 8px;
-        cursor: pointer;
-        border: none;
-      }
-      .tab.active {
-        background: #f1b035;
-      }
-      .week-list {
-        max-width: 800px;
-        margin: 0 auto;
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      .week-item {
-        display: flex;
-        height: 40px;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-        cursor: pointer;
-      }
-      .week-item:last-child {
-        border-bottom: none;
-      }
-      .week-item:hover {
-        background: #f1f1f1;
-      }
-      .week-title {
-        color: #8d7e7e;
-        font-weight: bold;
-      }
-      .arrow {
-        font-size: 18px;
-        color: #33df11;
-      }
-      .qa-card {
-        max-width: 900px;
-        margin: 20px auto;
-        background: rgb(241, 229, 229);
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      .qa-card h3 {
-        margin: 0 0 10px 0;
-        color: #3f3b44;
-      }
-      .qa-card p {
-        margin: 0;
-        color: #333;
-      }
-      .toggle-button {
-        display: block;
-        margin: 10px auto;
-        padding: 8px 12px;
-        background: #716186;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-      .back-button {
-        display: block;
-        margin: 20px auto;
-        padding: 10px 20px;
-        background: #9af89a;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-      .qa-card p.answer {
-        margin: 0;
-        color: #1b1a1a;
-        display: none;
-        padding: 10px;
+<style>
+  /* Root Theme Variables */
+  :root {
+    --primary: #2a5c82;
+    --secondary: #4caf50;
+    --accent: #ff6b6b;
+    --light: #f8f9fa;
+    --dark: #343a40;
+  }
 
-        border-radius: 8px;
-        background-color: #f6fcfb;
-        transition: all 0.3s ease-in-out;
-      }
+  /* General Styles */
+  body {
+    font-family: "Lato", sans-serif;
+    background: linear-gradient(135deg, #f4f4f4 0%, #e8eef3 100%);
+    color: var(--dark);
+    margin: 0;
+  }
 
-      .qa-card p.answer.show-answer {
-        display: block;
+  /* Flashcard Container */
+  .flashcard-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-        background-color: #f0f3f3;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="tabs">
-      <button class="tab active" data-board="aqa">AQA</button>
-      <button class="tab" data-board="ocr">OCR</button>
-      <button class="tab" data-board="english">GCSE</button>
+    position: relative;
+    padding-bottom: 5px; /* Space for navigation buttons */
+    margin-bottom: 5px;
+  }
+
+  /* Flashcard Styles */
+  .flashcard {
+    position: relative;
+    width: 950px;
+    height: 450px;
+    max-width: 100%;
+
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    perspective: 1000px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  /* Inner Card Flip Animation */
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 15px;
+    background: white;
+  }
+
+  .flashcard.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  /* Card Faces */
+  .card-front,
+  .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    box-sizing: border-box;
+  }
+
+  .card-front {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  }
+
+  .card-back {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e2e6ea 100%);
+    transform: rotateY(180deg);
+  }
+  #progress-indicator {
+    position: absolute;
+    top: 10px;
+    left: 70px;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(42, 92, 130, 0.25);
+    display: flex;
+    z-index: 10;
+  }
+
+  /* Question Buttons */
+  /* Question Buttons Container */
+  #question-buttons-container {
+    display: flex;
+    justify-content: left;
+    margin-bottom: 1%;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+    overflow-x: auto;
+  }
+
+  #question-buttons-container button {
+    padding: 5px 5px;
+    font-size: 18px;
+    background-color: white;
+    color: black;
+    border-style: solid;
+    border-color: #ced7e0;
+    border-radius: 5px;
+    border-width: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 50px;
+    height: 50px;
+  }
+
+  #question-buttons-container button.active {
+    background-color: #638be0;
+  }
+
+  #question-buttons-container button:hover {
+    background-color: #cbd0d4;
+  }
+
+  button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+
+  button:disabled {
+    background-color: #ced4da; /* Grey when disabled */
+    cursor: not-allowed;
+  }
+
+  /* Global Button Styles */
+  button {
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #007bff;
+
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  button:disabled {
+    background-color: #ced4da;
+    cursor: not-allowed;
+  }
+
+  /* Navigation Buttons */
+  .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Adjust spacing between buttons as needed */
+    margin-top: 10px; /* Space between the flashcard container and the buttons */
+
+    padding-bottom: 100px; /* Space for navigation buttons */
+    margin-bottom: 100px;
+  }
+
+  .nav-buttons button {
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Icon Spacing for Navigation Buttons */
+  /* Icon Spacing for Navigation Buttons */
+  .nav-buttons button::before {
+    margin-right: 8px;
+  }
+  #prev-top-btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #007bff;
+
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #prev-btn::before {
+    content: "‹";
+  }
+
+  #next-btn::after {
+    content: "›";
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .flashcard {
+      height: 400px;
+    }
+    .card-front,
+    .card-back {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .flashcard {
+      height: 350px;
+    }
+    .card-front,
+    .card-back {
+      font-size: 1rem;
+    }
+    .nav-buttons {
+      gap: 10px;
+    }
+    #question-buttons-container button {
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .flashcard {
+      height: 300px;
+      width: 90%; /* Responsive width */
+      max-width: 450px; /* Prevent it from becoming too big */
+    }
+
+    .card-front,
+    .card-back {
+      font-size: 0.9rem;
+      padding: 1rem;
+    }
+    #progress-indicator {
+      position: fixed;
+      font-size: 0.8rem;
+      padding: 0.4rem 1rem;
+    }
+    #question-buttons-container button {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+    /* .nav-buttons button {
+    min-width: 80px;
+    font-size: 14px;
+    padding: 8px;
+  } */
+    .nav-buttons {
+      flex-direction: column; /* Stack buttons vertically */
+      gap: 10px; /* Space between buttons */
+      align-items: center; /* Center align */
+    }
+
+    .nav-buttons button {
+      width: 80%; /* Make button take most of the width */
+      max-width: 400px; /* Prevent it from being too wide */
+    }
+    #question-buttons-container {
+      justify-content: center; /* Center align buttons */
+      flex-wrap: wrap; /* Ensure buttons wrap properly */
+      gap: 5px; /* Reduce spacing between buttons */
+    }
+
+    #question-buttons-container button {
+      width: 40px; /* Reduce button size */
+      height: 40px;
+      font-size: 14px; /* Adjust font size */
+    }
+  }
+</style>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="{% static 'css/flashcards.css' %}" />
+
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item"><a href="#">A Level</a></li>
+    <li class="breadcrumb-item"><a href="#">Physics</a></li>
+    <li class="breadcrumb-item"><a href="#">AQA</a></li>
+    <li class="breadcrumb-item"><a href="#">Revision Notes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Capacitors</li>
+  </ol>
+</nav>
+
+<!-- Flashcard Section -->
+<div class="flashcard-container">
+  <!-- <div id="question-buttons-container"></div> -->
+  <div id="question-buttons-container"></div>
+
+  <div class="flashcard" id="flashcard">
+    <div id="progress-indicator"></div>
+    <div class="card-inner">
+      <div class="card-front" id="question"></div>
+      <div class="card-back" id="answer"></div>
     </div>
+  </div>
+</div>
 
-    <div class="week-list" id="weekList"></div>
+<!-- Navigation Buttons placed outside the flashcard container -->
+<div class="nav-buttons">
+  <button id="prev-btn">‹ Previous</button>
+  <button id="show-answer-btn">🔄 Show Answer</button>
+  <button id="next-btn">Next ›</button>
+</div>
 
-    <script>
-      const weekData = {
-        aqa: [
-          { title: "Week 01", id: "aqa_week_01" },
-          { title: "Week 02", id: "aqa_week_02" },
-          { title: "Week 03", id: "aqa_week_03" },
-          { title: "Week 04", id: "aqa_week_04" },
-        ],
-        ocr: [
-          { title: "Week 01", id: "ocr_week_01" },
-          { title: "Week 02", id: "ocr_week_02" },
-        ],
-        english: [
-          { title: "Week 01", id: "english_week_01" },
-          { title: "Week 02", id: "english_week_02" },
-        ],
-      };
+<script>
+  const flashcards = [
+    {
+      question: "What is amplitude?",
+      answer:
+        "<li>The amplitude of a wave is the <strong> maximum displacement </strong> from its rest position.</li>",
+    },
+    {
+      question: "What is frequency (in terms of waves)?",
+      answer:
+        "<ul><li>Frequency refers to the <strong>number of waves</strong> passing a specific point <strong>each second</strong>. It is measured in Hertz (Hz) or \\( \\text{s}^{-1} \\).</li></ul>",
+    },
+    {
+      question: "What is wavelength?",
+      answer:
+        "<ul><li>The wavelength is the <strong>distance between two identical consecutive points</strong> in a wave, such as two peaks or two troughs.</li></ul>",
+    },
+    {
+      question: "What is the time period?",
+      answer:
+        "<ul><li>The time period is the <strong>time taken</strong> for one complete wavelength to pass a given point.</li></ul>",
+    },
+    {
+      question: "What are mechanical waves (with examples)?",
+      answer:
+        "<ul class='custom-list'><li>Mechanical waves are waves that <strong>require a medium</strong> to travel through.</li><li>Examples include:</li><ul><li>Sound waves</li><li>Water waves</li><li>Seismic waves</li></ul></ul>",
+    },
+    {
+      question: "What are electromagnetic waves?",
+      answer:
+        "<ul class='custom-list'><li>Electromagnetic waves are <strong>oscillating electric and magnetic fields</strong> that are:</li><ul><li>In <strong>phase</strong> with each other</li><li><strong>Perpendicular</strong> to one another</li></ul><li><em>Example: Light waves</em></li></ul>",
+    },
+    {
+      question: "Give three properties of electromagnetic waves.",
+      answer:
+        "<ul><li>They can travel through a vacuum.</li><li>They travel at the speed of light in a vacuum.</li><li>All electromagnetic waves are transverse in nature.</li></ul>",
+    },
+    {
+      question:
+        "What are the sections of the electromagnetic spectrum and the properties of each?",
+      answer:
+        "<ul><li><strong>Radio Waves:</strong> Longest wavelength, lowest frequency, least penetrating.</li><li><strong>Microwaves, Infrared, Visible Light, Ultraviolet, X-rays:</strong> Varying wavelengths and frequencies.</li><li><strong>Gamma Rays:</strong> Shortest wavelength, highest frequency, most penetrating.</li></ul>",
+    },
+    {
+      question: "In what range does visible light lie?",
+      answer:
+        "<ul><li>Visible light lies in the range of <strong>400 nm to 700 nm</strong>.</li></ul>",
+    },
+    {
+      question: "Describe the motion of transverse waves.",
+      answer:
+        "<ul><li>In transverse waves, the <strong>direction of vibrations</strong> is <strong>perpendicular</strong> to the <strong>direction of energy propagation</strong>.</li></ul>",
+    },
+    {
+      question: "What type of waves cannot be polarised and why?",
+      answer:
+        "<ul><li><strong>Longitudinal waves</strong> cannot be polarised because their oscillations always occur in the same direction as the wave's travel.</li><li>There is no distinction between different oscillation directions.</li></ul>",
+    },
+    {
+      question: "What is unpolarised light?",
+      answer:
+        "<ul><li>Unpolarised light is a mixture of waves oscillating in <strong>different planes</strong>.</li></ul>",
+    },
+    {
+      question:
+        "How can you make a wave polarised, what does this do, and how does it work?",
+      answer:
+        "<ul class='custom-list'><li>A wave can be polarised by passing it through a <strong>polaroid filter</strong>, which:</li><ul><li>Allows waves oscillating in one plane to pass through</li><li>Reduces the intensity of the wave by absorbing oscillations in other directions</li></ul></ul>",
+    },
+    {
+      question: "Give a use of polaroid filters.",
+      answer:
+        "<ul><li>Polaroid filters are used in sunglasses to reduce glare by blocking <strong>horizontally polarised light</strong>, such as that reflected off roads or water surfaces.</li></ul>",
+    },
+    {
+      question: "Describe the motion of longitudinal waves.",
+      answer:
+        "<ul><li>In longitudinal waves, the <strong>direction of vibrations</strong> is <strong>parallel</strong> to the <strong>direction of energy propagation</strong>.</li></ul>",
+    },
+    {
+      question: "How is polarisation used in transmission and reception?",
+      answer:
+        "<ul><li>TV signals are transmitted either horizontally or vertically, and your antenna must match the signal's polarisation.</li><li>Antennas in the same area should have the same polarisation to avoid interference from nearby stations.</li></ul>",
+    },
+    {
+      question:
+        "How does changing the amplitude and wavelength affect particles on a longitudinal wave?",
+      answer:
+        "<ul><li>Increasing the <strong>amplitude</strong> makes particles vibrate further from their rest position.</li><li>Increasing the <strong>wavelength</strong> increases the distance between consecutive areas of compression and rarefaction.</li></ul>",
+    },
+    {
+      question: "What do 'in phase' and 'in antiphase' mean?",
+      answer:
+        '<ul><li><strong>In phase:</strong> Peaks align with peaks, and troughs align with troughs.</li><li><strong>In antiphase:</strong> Peaks align with troughs and vice versa.</li><li>Example visualization helps demonstrate the relationship:</li><li><img src="path/to/your/image/in-phase.png" alt="In phase and antiphase illustration"></li></ul>',
+    },
+    {
+      question: "When are two waves coherent, and what does this mean?",
+      answer:
+        "<ul><li>Two waves are coherent when their phase difference is <strong>constant</strong>.</li><li>This implies that the waves have the same <strong>frequency</strong>.</li></ul>",
+    },
+    {
+      question: "What is path difference, and what can it lead to?",
+      answer:
+        '<ul><li>Path difference is the difference in distances traveled by two coherent waves.</li><li>A path difference leads to a <strong>phase difference</strong> between the waves.</li><li>Example: If one wave travels half a wavelength further than the other, the waves will be completely out of phase.</li><li>Without coherent waves, there is no stable interference pattern, as shown below:</li><li><img src="path/to/your/image/path-difference.png" alt="Path difference illustration"></li></ul>',
+    },
+    {
+      question:
+        "What is the phase difference in stationary and progressive waves?",
+      answer:
+        "<ul><li>For stationary waves, the phase difference is limited to values like \\( \\pi/2, \\pi, 3\\pi/2, \\, \\text{or} \\, 2\\pi \\, \\text{radians} \\).</li><li>For progressive waves, the phase difference is calculated as the fraction of a cycle between two points:<br>\\[ \\text{Phase Difference} = \\frac{\\text{Distance between points}}{\\text{Wavelength}} \\times 2\\pi \\]</li><li>In progressive waves, particles undergo maximum displacement but always remain at fixed phase differences relative to each other.</li></ul>",
+    },
+    {
+      question: "What happens when two waves meet?",
+      answer:
+        "<ul><li>When two waves meet, they <strong>superpose</strong>, meaning their displacements combine.</li><li>The resultant displacement is the <strong>vector sum</strong> of their individual displacements.</li></ul>",
+    },
+    {
+      question: "When does constructive interference occur?",
+      answer:
+        "<ul><li>Constructive interference occurs when two waves are in phase, i.e., their peaks and troughs align perfectly.</li><li>The condition is that the waves must be separated by an integer multiple of the wavelength (\\( n\\lambda \\)).</li><li>This results in a new wave with greater amplitude.</li></ul>",
+    },
+    {
+      question: "When does maximum destructive interference occur?",
+      answer:
+        "<ul><li>Maximum destructive interference occurs when two waves are out of phase, meaning one wave's peak aligns with the other's trough.</li><li>The condition is that the waves are separated by an odd multiple of half the wavelength (\\( (n + 1/2)\\lambda \\)).</li><li>The result is a wave with zero amplitude.</li></ul>",
+    },
+    {
+      question:
+        "What are the key differences between stationary and progressive waves?",
+      answer:
+        "<table border=1><tr><th>Property</th><th>Stationary Wave</th><th>Progressive Wave</th></tr><tr><td>Energy Transfer</td><td>No energy transfer between points.</td><td>Energy is transferred from one point to another.</td></tr><tr><td>Amplitude</td><td>Varies from zero (nodes) to maximum (antinodes).</td><td>Amplitude is the same for all points.</td></tr></table>",
+    },
+    {
+      question: "How are stationary waves formed?",
+      answer:
+        "<ul><li>Stationary waves are formed when an incident wave meets its reflected wave, and they superpose.</li><li>This happens when two waves of the same frequency and amplitude travel in opposite directions.</li><li><em>Example:</em> Vibrations on a stretched string fixed at both ends.</li></ul>",
+    },
+    {
+      question: "Why do stationary waves only form at specific frequencies?",
+      answer:
+        "<ul><li>Stationary waves only form when the wavelength satisfies the condition that there is a node or antinode at both ends of the medium.</li><li>This occurs at specific fractions of the medium's length, such as \\( \\lambda/2 \\) or \\( \\lambda/4 \\).</li></ul>",
+    },
+    {
+      question: "What happens at nodes and antinodes in stationary waves?",
+      answer:
+        "<ul><li><strong>Nodes:</strong> No displacement due to complete destructive interference.</li><li><strong>Antinodes:</strong> Maximum displacement due to constructive interference.</li><li>Between these points, partial interference occurs, reducing the displacement progressively.</li></ul>",
+    },
+    {
+      question:
+        "What is the distance between nodes or between a node and an antinode?",
+      answer:
+        "<ul><li>The distance between two nodes is \\( \\lambda/2 \\).</li><li>The distance between a node and an adjacent antinode is \\( \\lambda/4 \\).</li></ul>",
+    },
+    {
+      question:
+        "What are the first, second, and third harmonics, and how are they related?",
+      answer:
+        "<ul><li><strong>First harmonic:</strong> Fundamental mode with the longest wavelength.</li><li><strong>Second harmonic:</strong> First overtone, twice the frequency of the first harmonic.</li><li><strong>Third harmonic:</strong> Second overtone, three times the frequency of the first harmonic.</li></ul>",
+    },
+    {
+      question:
+        "What is the length of each harmonic in a fully open or closed tube?",
+      answer:
+        "<ul class='custom-list'><li><strong>First harmonic:</strong> \\( l = \\lambda/2 \\)</li><li><strong>Second harmonic:</strong> \\( l = \\lambda \\)</li><li><strong>nth harmonic:</strong> \\( l = n \\times (\\lambda/2) \\)</li><li>This applies to tubes that are open at both ends or closed at both ends.</li></ul>",
+    },
+    {
+      question: "What is the length of harmonics in a tube closed at one end?",
+      answer:
+        "<ul><li><strong>First harmonic:</strong> \\( l = \\lambda/4 \\)</li><li><strong>Third harmonic:</strong> \\( l = 3\\lambda/4 \\)</li><li><strong>(2n - 1)th harmonic:</strong> \\( l = (2n - 1)(\\lambda/4) \\)</li><li>Only odd harmonics are possible in such tubes because the closed end must always be a node.</li></ul>",
+    },
+    {
+      question: "What is refraction?",
+      answer:
+        '<ul><li>Refraction occurs when a wave changes direction as it passes from one medium to another due to a change in speed.</li><li>The mnemonic for remembering this is: "Towards Air Glass, Away Glass Air."</li></ul>',
+    },
+    {
+      question: "What types of diffraction occur as the gap size changes?",
+      answer:
+        "<ul><li><strong>When aperture size = wavelength:</strong> Maximum diffraction occurs.</li><li><strong>When aperture size << wavelength:</strong> The wave may reflect back.</li><li><strong>When aperture size >> wavelength:</strong> Diffraction only occurs at the edges.</li></ul>",
+    },
+    {
+      question: "What remains constant during refraction?",
+      answer:
+        "<ul><li>The <strong>frequency</strong> of the wave remains constant.</li></ul>",
+    },
+    {
+      question: "Which wavelength refracts the most?",
+      answer:
+        '<ul><li>Shorter wavelengths refract more than longer wavelengths.</li><li><img src="path/to/image/refraction-wavelength.png" alt="Diagram of refraction with different wavelengths."></li></ul>',
+    },
+    {
+      question: "What is absolute refractive index?",
+      answer:
+        "<ul><li>The absolute refractive index (\\( n \\)) measures how much slower light travels in a medium compared to a vacuum:</li><li>\\[ n = \\frac{c}{c_s} \\]</li><li>where \\( c \\) is the speed of light in a vacuum and \\( c_s \\) is the speed of light in the substance.</li></ul>",
+    },
+    {
+      question: "What is Snell's Law?",
+      answer:
+        '<ul><li>Snell\'s Law relates the angles of incidence and refraction for light passing between two media:</li><li>\\[ n_1 \\sin \\theta_1 = n_2 \\sin \\theta_2 \\]</li><li><img src="path/to/image/snells-law.png" alt="Diagram showing Snell\'s Law."></li></ul>',
+    },
+    {
+      question: "What is the refractive index of air?",
+      answer:
+        "<ul><li>The refractive index of air is approximately 1.</li></ul>",
+    },
+    {
+      question:
+        "What happens when the incident angle equals the critical angle?",
+      answer:
+        '<ul><li>The angle of refraction becomes \\( 90^\circ \\), meaning the refracted ray travels along the boundary.</li><li><img src="path/to/image/critical-angle.png" alt="Diagram showing critical angle refraction."></li></ul>',
+    },
+    {
+      question: "What are the conditions for total internal reflection?",
+      answer:
+        "<ul><li>The light must travel from a denser medium to a less dense medium.</li><li>The angle of incidence must be greater than or equal to the critical angle.</li></ul>",
+    },
+    {
+      question:
+        "Why is a semi-circular block used for total internal reflection?",
+      answer:
+        "<ul><li>The curved side ensures the light always enters at an angle of incidence of \\( 0^\circ \\), avoiding unnecessary refraction.</li></ul>",
+    },
+    {
+      question: "How does light travel through an optical fibre?",
+      answer:
+        '<ul><li>The fibre consists of a glass core surrounded by cladding with a lower refractive index.</li><li>Light enters the core, is refracted slightly, and undergoes total internal reflection along the fibre when the angle of incidence meets or exceeds the critical angle.</li><li><img src="path/to/image/optical-fibre.png" alt="Diagram showing light in an optical fibre."></li></ul>',
+    },
+    {
+      question: "Why is cladding important in optical fibres?",
+      answer:
+        "<ul><li>It protects the core from damage.</li><li>It prevents signal cross-talk between fibres.</li><li>It minimizes the loss of light from the core.</li></ul>",
+    },
+    {
+      question:
+        "What are two advantages and one disadvantage of optical fibres over metal wires?",
+      answer:
+        "<ul class='custom-list'><li><strong>Advantages:</strong></li><ul><li>Optical fibres do not corrode.</li><li>They can transmit more data per second than metal wires.</li></ul><li><strong>Disadvantage:</strong></li><ul><li>It is difficult to join optical fibres and create connections.</li></ul></ul>",
+    },
+    {
+      question: "What is multimode dispersion, and what does it cause?",
+      answer:
+        "<ul><li>Multimode dispersion occurs when light enters the fibre at slightly different angles and takes different paths due to multiple reflections.</li><li>This leads to <strong>pulse broadening</strong>, where light signals arrive at different times.</li></ul>",
+    },
+    {
+      question: "What affects multimode dispersion, and how can it be reduced?",
+      answer:
+        "<ul><li><strong>Cable length:</strong> Longer cables increase dispersion. Use relays to shorten signal travel distance.</li><li><strong>Cable thickness:</strong> Thicker cables allow more varied paths. Use thinner cables to reduce dispersion.</li></ul>",
+    },
+    {
+      question: "What is material dispersion, and what does it cause?",
+      answer:
+        "<ul><li>Material dispersion happens when different wavelengths of light travel at different speeds within an optical fibre. This also leads to <strong>pulse broadening</strong>.</li></ul>",
+    },
+    {
+      question: "Why is pulse broadening problematic?",
+      answer:
+        "<ul><li>Pulse broadening reduces signal coherence, making it harder to distinguish between transmitted signals.</li></ul>",
+    },
+    {
+      question: "What is pulse absorption, and how can it be minimized?",
+      answer:
+        "<ul><li>Pulse absorption occurs when light energy is absorbed by the material, reducing transparency.</li><li>It can be minimized by using highly transparent and pure materials in the optical fibre core.</li></ul>",
+    },
+    {
+      question: "How can material dispersion be resolved?",
+      answer:
+        "<ul><li>Material dispersion can be minimized by using <strong>monochromatic light</strong>, as it ensures all the light waves travel at the same speed within the optical fibre.</li></ul>",
+    },
+    {
+      question: "What does absorption cause in a wave?",
+      answer:
+        "<ul><li>Absorption causes a <strong>loss of amplitude</strong> and reduces the wave’s <strong>intensity</strong>.</li></ul>",
+    },
+    {
+      question: "What is intensity?",
+      answer:
+        "<ul><li>Intensity is the <strong>power</strong> transferred per unit area and is measured in \\( \\text{W/m}^2 \\).</li></ul>",
+    },
+    {
+      question: "Why is the minimum intensity not zero between two maximam?",
+      answer:
+        "<ul><li>The intensity of the wave decreases with distance, as the waves spread out while traveling further.</li><li>Some waves travel slightly farther than others, causing slight differences in phase.</li><li>Amplitude or intensity differences between waves prevent complete cancellation.</li></ul>",
+    },
+    {
+      question: "What are lasers a source of?",
+      answer:
+        "<ul><li>Lasers produce <strong>coherent</strong> and <strong>monochromatic</strong> light, meaning all waves have the same frequency and phase relationship.</li></ul>",
+    },
+    {
+      question: "What is monochromatic light?",
+      answer:
+        "<ul><li>Monochromatic light consists of a <strong>single frequency or wavelength</strong>.</li></ul>",
+    },
+    {
+      question: "What wavelengths diffract more and why?",
+      answer:
+        "<ul><li><strong>Longer wavelengths</strong> diffract more because they have a lower frequency and energy, allowing them to bend more easily around obstacles.</li><li>Remember: \( p = mv \).</li></ul>",
+    },
+    {
+      question: "Describe the pattern observed in single-slit diffraction.",
+      answer:
+        '<ul><li>A pattern of alternating bright and dark fringes appears.</li><li>The central fringe is the brightest and double the width of the others.</li><li>The intensity of the fringes decreases as you move further from the center.</li><li><img src="path/to/image/single-slit-diffraction.png" alt="Single slit diffraction pattern illustration"></li></ul>',
+    },
+    {
+      question: "What will always be at the center of a diffraction pattern?",
+      answer:
+        "<ul><li>The center always contains the <strong>maximum bright fringe</strong>.</li><li>This happens because light from all parts of the slit travels the same distance to the center, arriving <strong>in phase</strong> and undergoing constructive interference.</li></ul>",
+    },
+    {
+      question:
+        "What is the formula for determining the width of the central fringe?",
+      answer:
+        "<ul><li>The width of the central fringe is given by:</li><li>\\[ W = \\frac{2\\lambda D}{a} \\]</li><li>Where:</li><ul><li>\\( W \\): Width of the central maximum</li><li>\\( \\lambda \\): Wavelength of light</li><li>\\( D \\): Distance between the slit and screen</li><li>\\( a \\): Width of the slit</li></ul></ul>",
+    },
+    {
+      question:
+        "Why did Young use a single slit in his double-slit experiment?",
+      answer:
+        "<ul><li>The single slit ensured that light was <strong>diffracted</strong> before passing through the double slits.</li><li>This created light that was <strong>coherent and monochromatic</strong>, crucial for observing interference patterns.</li></ul>",
+    },
+    {
+      question:
+        "What occurs at each type of fringe in Young’s double-slit experiment?",
+      answer:
+        "<ul><li><strong>Bright fringes:</strong> Constructive interference occurs.</li><li><strong>Dark fringes:</strong> Destructive interference occurs.</li></ul>",
+    },
+    {
+      question:
+        "What is each variable in the formula for fringe spacing in Young’s double-slit experiment?",
+      answer:
+        "<ul><li>The formula for fringe spacing is:</li><li>\\[ w = \\frac{\\lambda D}{s} \\]</li><ul><li>\\( w \\): Fringe spacing (m)</li><li>\\( \\lambda \\): Wavelength of light</li><li>\\( D \\): Distance between the slits and the screen</li><li>\\( s \\): Distance between the slits</li></ul></ul>",
+    },
+    {
+      question: "What is a diffraction grating and how does it work?",
+      answer:
+        "<ul><li>A diffraction grating is a glass or metal surface with <strong>closely spaced parallel lines</strong> that split light into a spectrum by diffraction.</li></ul>",
+    },
+    {
+      question:
+        "Why is a diffraction grating better than Young’s double-slit experiment?",
+      answer:
+        "<ul><li>It allows more light through, producing brighter and sharper fringes.</li><li>It avoids the reliance on small-angle approximations.</li></ul>",
+    },
+    {
+      question: "What is each variable in the formula for diffraction grating?",
+      answer:
+        "<ul><li>The formula for diffraction grating is:</li><li>\\[ n\\lambda = d\\sin\\theta \\]</li><ul><li>\\( n \\): Order of the diffraction pattern</li><li>\\( \\lambda \\): Wavelength of light</li><li>\\( d \\): Distance between adjacent slits</li><li>\\( \\theta \\): Diffraction angle</li></ul></ul>",
+    },
+    {
+      question: "How can you derive the formula for diffraction grating?",
+      answer:
+        "<ul><li>By using the condition for constructive interference, where the path difference between adjacent slits equals \\( n\\lambda \\), and applying trigonometry to relate it to the angle \\( \\theta \\).</li></ul>",
+    },
+    {
+      question:
+        "What is observed on the screen when white light passes through single slits, double slits, or a diffraction grating?",
+      answer:
+        "<ul><li>In single-slit diffraction: A central bright white fringe with side fringes containing a spectrum of colors.</li><li>In double-slit diffraction: Alternating bright and dark fringes, each showing a spectrum.</li><li>In diffraction grating: Bright and sharp spectral lines for each order of diffraction.</li></ul>",
+    },
+  ];
 
-      const questionsAnswers = {
-        aqa_week_01: [
-          {
-            question:
-              "What is the significance of a candy cane in holiday traditions?",
-            answer:
-              "A candy cane represents the shepherd's crook and is a traditional Christmas treat.",
-          },
-          {
-            question:
-              "What is the significance of a candy cane in holiday traditions?",
-            answer:
-              "A candy cane represents the shepherd's crook and is a traditional Christmas treat.",
-          },
-        ],
-        aqa_week_02: [
-          {
-            question:
-              "Explain the forces acting on a cylinder sliding down a slope.",
-            answer:
-              "The forces include gravity, normal force, friction, and the applied tension force.",
-          },
-        ],
-        aqa_week_03: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-        aqa_week_04: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-        ocr_week_01: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-        ocr_week_02: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-        english_week_01: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-        english_week_02: [
-          {
-            question: "What is a damped pendulum?",
-            answer:
-              "A damped pendulum experiences a resistive force, typically due to air resistance or friction, reducing its amplitude over time.",
-          },
-        ],
-      };
+  let cardsPerPage = 12;
+  let totalQuestions = flashcards.length; // Adjust based on your dataset
+  let currentPage = 0;
+  let currentCardIndex = 0;
 
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.addEventListener("click", () => {
-          document
-            .querySelectorAll(".tab")
-            .forEach((t) => t.classList.remove("active"));
-          tab.classList.add("active");
-          populateWeeks(tab.dataset.board);
-        });
-      });
+  function updateCardsPerPage() {
+    if (window.innerWidth <= 480) {
+      // Adjust this value as per your mobile breakpoint
+      cardsPerPage = 4; // Mobile view
+    } else {
+      cardsPerPage = 12; // Desktop view
+    }
+    // Recalculate the current page index after changing cardsPerPage
+    currentPage = Math.floor(currentCardIndex / cardsPerPage);
+  }
 
-      function populateWeeks(board) {
-        const weekList = document.getElementById("weekList");
-        weekList.innerHTML = "";
-        weekData[board].forEach((week) => {
-          const weekItem = document.createElement("div");
-          weekItem.classList.add("week-item");
-          weekItem.innerHTML = `<span class='week-title'>${week.title}</span><span class="arrow">→</span>`;
-          weekItem.addEventListener("click", () => {
-            showQuestionAnswer(week.id);
-          });
-          weekList.appendChild(weekItem);
-        });
+  // Initialize on page load
+  updateCardsPerPage();
+
+  // Listen for window resize to update cardsPerPage dynamically
+  window.addEventListener("resize", updateCardsPerPage);
+
+  const questionButtonsContainer = document.getElementById(
+    "question-buttons-container"
+  );
+
+  const flashcard = document.getElementById("flashcard");
+  const questionEl = document.getElementById("question");
+  const answerEl = document.getElementById("answer");
+  const showAnswerBtn = document.getElementById("show-answer-btn");
+  const progressIndicator = document.getElementById("progress-indicator");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+
+  const prevPageBtn = document.createElement("button");
+  const nextPageBtn = document.createElement("button");
+  prevPageBtn.innerText = "‹";
+  nextPageBtn.innerText = "›";
+
+  function loadCard(index) {
+    questionEl.innerHTML = flashcards[index].question;
+    answerEl.innerHTML = flashcards[index].answer;
+
+    flashcard.classList.remove("flipped");
+    showAnswerBtn.textContent = "Show Answer";
+
+    progressIndicator.textContent = `Question ${index + 1}`;
+    progressIndicator.style.display = "flex";
+
+    updateActiveButton(index);
+
+    updateNavigationButtons();
+  }
+
+  showAnswerBtn.addEventListener("click", () => {
+    if (flashcard.classList.contains("flipped")) {
+      flashcard.classList.remove("flipped");
+      showAnswerBtn.textContent = "Show Answer";
+      progressIndicator.textContent = `Question ${currentCardIndex + 1}`;
+      progressIndicator.style.display = "flex";
+    } else {
+      flashcard.classList.add("flipped");
+      showAnswerBtn.textContent = "Back to Question";
+      progressIndicator.textContent = "Answer";
+      progressIndicator.style.display = "flex";
+    }
+  });
+
+  function updateProgress(index) {
+    progressIndicator.textContent = `Question ${index + 1}`;
+  }
+
+  function createQuestionButtons() {
+    questionButtonsContainer.innerHTML = "";
+
+    questionButtonsContainer.appendChild(prevPageBtn);
+
+    let startIndex = currentPage * cardsPerPage;
+    let endIndex = Math.min(startIndex + cardsPerPage, totalQuestions);
+
+    for (let i = startIndex; i < endIndex; i++) {
+      createButton(i);
+    }
+
+    if (endIndex < totalQuestions) {
+      const dots = document.createElement("span");
+      dots.innerText = "...";
+      questionButtonsContainer.appendChild(dots);
+      createButton(totalQuestions - 1);
+    }
+
+    questionButtonsContainer.appendChild(nextPageBtn);
+  }
+
+  function createButton(index) {
+    const button = document.createElement("button");
+    button.innerText = index + 1;
+    button.addEventListener("click", () => {
+      currentCardIndex = index;
+      loadCard(currentCardIndex);
+    });
+
+    if (index === currentCardIndex) {
+      button.classList.add("active");
+    }
+
+    questionButtonsContainer.appendChild(button);
+  }
+
+  // function createButton(index) {
+  //   const button = document.createElement("button");
+  //   button.innerText = index + 1;
+
+  //   button.addEventListener("click", () => {
+  //     currentCardIndex = index;
+  //     loadCard(currentCardIndex);
+
+  //     if ((index + 1) % cardsPerPage === 0 && index + 1 < totalQuestions) {
+  //       currentPage++;
+  //       createQuestionButtons();
+  //     }
+
+  //     if (index % cardsPerPage === 0 && index !== 0) {
+  //       currentPage--;
+  //       createQuestionButtons();
+  //     }
+  //   });
+
+  //   if (index === currentCardIndex) {
+  //     button.classList.add("active");
+  //   }
+
+  //   questionButtonsContainer.appendChild(button);
+  // }
+
+  function updateActiveButton(index) {
+    const buttons = questionButtonsContainer.querySelectorAll("button");
+    buttons.forEach((button) => button.classList.remove("active"));
+
+    const activeButton = Array.from(buttons).find(
+      (btn) => btn.innerText == index + 1
+    );
+    if (activeButton) activeButton.classList.add("active");
+  }
+
+  function updateNavigationButtons() {
+    prevBtn.disabled = currentCardIndex === 0;
+    nextBtn.disabled = currentCardIndex === totalQuestions - 1;
+  }
+
+  // prevBtn.addEventListener("click", () => {
+  //   if (currentCardIndex > 0) {
+  //     currentCardIndex--;
+  //     loadCard(currentCardIndex);
+  //   }
+  //   if (currentCardIndex % cardsPerPage === currentPage - 1) {
+  //     currentPage--;
+  //     createQuestionButtons();
+  //   }
+  // });
+
+  prevBtn.addEventListener("click", () => {
+    if (currentCardIndex > 0) {
+      currentCardIndex--;
+      loadCard(currentCardIndex);
+
+      // Auto-update question button set after reaching 12, 24, 36, etc.
+      if (currentCardIndex % cardsPerPage === cardsPerPage - 1) {
+        currentPage--;
+        createQuestionButtons();
       }
+    }
+  });
 
-      function showQuestionAnswer(weekId) {
-        const qaSet = questionsAnswers[weekId];
-        if (qaSet) {
-          document.body.innerHTML = `<h2 align="center">Questions And Answers</h2>`;
-          qaSet.forEach((qa) => {
-            const qaCard = document.createElement("div");
-            qaCard.classList.add("qa-card");
+  // nextBtn.addEventListener("click", () => {
+  //   if (currentCardIndex < totalQuestions - 1) {
+  //     currentCardIndex++;
+  //     loadCard(currentCardIndex);
+  //   }
+  // });
 
-            qaCard.innerHTML = `
-              <h3>${qa.question}</h3>
-              <button class='toggle-button'>SHOW ANSWER</button>
-              <p class="answer" style="display:none">${qa.answer}</p>
-            `;
+  nextBtn.addEventListener("click", () => {
+    if (currentCardIndex < totalQuestions - 1) {
+      currentCardIndex++;
+      loadCard(currentCardIndex);
 
-            const toggleButton = qaCard.querySelector(".toggle-button");
-            const answerParagraph = qaCard.querySelector(".answer");
-
-            toggleButton.addEventListener("click", function () {
-              if (
-                answerParagraph.style.display === "none" ||
-                answerParagraph.style.display === ""
-              ) {
-                answerParagraph.style.display = "block";
-                answerParagraph.classList.add("show-answer");
-                toggleButton.textContent = "HIDE ANSWER";
-              } else {
-                answerParagraph.style.display = "none";
-                answerParagraph.classList.remove("show-answer");
-                toggleButton.textContent = "SHOW ANSWER";
-              }
-            });
-
-            document.body.appendChild(qaCard);
-          });
-
-          const backButton = document.createElement("button");
-          backButton.classList.add("back-button");
-          backButton.innerText = "Back to Revision Weeks";
-          backButton.addEventListener("click", () => {
-            location.reload();
-          });
-          document.body.appendChild(backButton);
-        }
+      // Auto update question button set after 12, 24, 36, etc.
+      if (currentCardIndex % cardsPerPage === 0) {
+        currentPage++;
+        createQuestionButtons();
       }
+    }
+  });
 
-      populateWeeks("aqa");
-    </script>
-  </body>
-</html>
+  prevPageBtn.addEventListener("click", () => {
+    if (currentPage > 0) {
+      currentPage--;
+      createQuestionButtons();
+    }
+  });
+
+  nextPageBtn.addEventListener("click", () => {
+    if ((currentPage + 1) * cardsPerPage < totalQuestions) {
+      currentPage++;
+      createQuestionButtons();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" && currentCardIndex < totalQuestions - 1) {
+      currentCardIndex++;
+      loadCard(currentCardIndex);
+    } else if (event.key === "ArrowLeft" && currentCardIndex > 0) {
+      currentCardIndex--;
+      loadCard(currentCardIndex);
+    }
+  });
+
+  createQuestionButtons();
+  loadCard(currentCardIndex);
+  updateNavigationButtons();
+</script>
